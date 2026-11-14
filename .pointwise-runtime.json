@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "name": "sharedphrases",
+  "description": "Longest original byte run shared by at least k distinct documents, for all k at once.",
+  "runtime": {
+    "kind": "cpython",
+    "executable": "python3",
+    "minimum_version": "3.8",
+    "iso_launch": true,
+    "dependencies": [],
+    "notes": "Standard library only; no third-party packages."
+  },
+  "module": {
+    "path": "sharedphrases.py",
+    "callable": "profile",
+    "signature": "profile(documents: list[bytes]) -> list[None | dict]",
+    "result_fields": {
+      "length": "integer L",
+      "doc": "0-based document index",
+      "start": "0-based byte offset inside that document"
+    },
+    "limits": {
+      "max_n": 200000,
+      "n_definition": "total bytes + number of documents",
+      "min_documents": 2
+    }
+  },
+  "entrypoints": {
+    "verify": {
+      "command": "python3 -I tests/verify.py",
+      "working_directory": ".",
+      "timeout_seconds": 300,
+      "description": "Runs unit tests, exhaustive brute-force comparison, structural invariants and the business demo; exits 0 only if everything passes."
+    },
+    "demo": {
+      "command": "python3 -I demo/business_demo.py",
+      "working_directory": ".",
+      "timeout_seconds": 120,
+      "description": "Loads data/supplier_contracts.jsonl, prints the longest shared contract clause for every k, and independently re-verifies each witness."
+    },
+    "exhaustive_reference": {
+      "command": "python3 -I tests/exhaustive_compare.py",
+      "working_directory": ".",
+      "timeout_seconds": 120,
+      "description": "Compares profile() against exhaustive substring enumeration on all short multisets over {a,b} (2-4 documents) plus randomised cases."
+    },
+    "unit_tests": {
+      "command": "python3 -I -m unittest discover -s tests -p 'test_*.py' -v",
+      "working_directory": ".",
+      "timeout_seconds": 120
+    },
+    "performance": {
+      "command": "python3 -I tests/test_performance.py",
+      "working_directory": ".",
+      "timeout_seconds": 300,
+      "description": "Exercises inputs at N = 200000 and asserts time and peak-memory bounds."
+    },
+    "corpus_regeneration": {
+      "command": "python3 -I demo/make_corpus.py",
+      "working_directory": ".",
+      "timeout_seconds": 60,
+      "description": "Deterministically rewrites data/supplier_contracts.jsonl."
+    }
+  },
+  "artifacts": {
+    "implementation": "sharedphrases.py",
+    "brute_force_reference": "bruteforce.py",
+    "demo": "demo/business_demo.py",
+    "demo_corpus": "data/supplier_contracts.jsonl",
+    "documentation": "README.md"
+  }
+}
